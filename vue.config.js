@@ -1,4 +1,4 @@
 module.exports = {
-  publicPath: "/my-start-page",
+  publicPath: "/MyStartPage/",
   outputDir: "docs",
 };
