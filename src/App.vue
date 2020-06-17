@@ -1,27 +1,61 @@
 <template>
-  <div id="app">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div id="app" class="container">
+    <StartPage />
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import StartPage from "./components/StartPage.vue";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
-    HelloWorld
+    StartPage
   }
-}
+};
 </script>
 
-<style>
+<style lang="scss">
+@import "~bulma/sass/utilities/_all";
+@import url("https://fonts.googleapis.com/css2?family=Nunito&display=swap");
+
+$family-sans-serif: "Nunito", sans-serif;
+
+$primary: #bd93f9;
+$primary-invert: findColorInvert($primary);
+// $link: #ff79c6;
+// $link-invert: findColorInvert($link);
+$dark-grey: #282a36;
+$light-grey: #44475a;
+$light-grey-invert: findColorInvert($light-grey);
+
+// set colors
+$colors: (
+  "primary": (
+    $primary,
+    $primary-invert
+  ),
+  // "link": (
+  //   $link,
+  //   $link-invert
+  // ),
+  "light-grey": (
+    $light-grey,
+    $light-grey-invert
+  )
+);
+
+$link: $link;
+
+* {
+  font-family: $family-sans-serif;
+}
+
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  color: white;
+}
+
+body {
+  background-color: $dark-grey;
 }
 </style>
