@@ -37,7 +37,7 @@ export default {
 .column {
   padding: 15px;
   position: relative;
-  min-height: 300px;
+  min-height: 325px;
   background-color: #44475a;
 }
 
@@ -46,31 +46,18 @@ export default {
   position: absolute;
   bottom: 0;
   left: 0;
-  margin: 25px 10px 5px 10px;
+  margin: 25px 10px 10px 10px;
   background-color: #44475a;
-  /* margin-top: 30px; */
 }
 
 .heading {
   text-transform: capitalize;
   margin-bottom: 20px;
-  //   padding: 5px;
-  //   background-color: #44475a;
-  //   border-radius: 5px 5px 0 0;
 }
 
-// .link {
-//   padding-left: 5px;
-//   color: #ff79c6;
-//   border-left: 2px solid transparent;
-//   transition: color 250ms ease, border-left 250ms ease;
-// }
-
-// .link:hover {
-//   color: #ff79c5a6;
-//   border-left: 2px solid #ff79c5a6;
-
 .link {
+  // link hover trick from:
+  // https://css-tricks.com/4-ways-to-animate-the-color-of-a-text-link-on-hover/
   position: relative;
   display: inline-block;
   font-size: 2em;
