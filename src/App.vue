@@ -1,6 +1,6 @@
 <template>
-  <div id="app" class="container">
-    <StartPage />
+  <div id="app" class="columns">
+    <StartPage class="column" />
   </div>
 </template>
 

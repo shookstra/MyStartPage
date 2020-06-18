@@ -1,31 +1,70 @@
 <template>
-  <div class="start-page">
-    <p class="is-size-1 has-text-white">Start Page</p>
-    <p class="title has-text-white is-size-4">{{ time }}</p>
-    <b-field>
-      <b-input
-        placeholder="Duckduckgo Search..."
-        type="search"
-        icon-right="magnify"
-        icon-right-clickable
-        size="is-large"
-        v-model="searchTerm"
-        @icon-right-click="searchIconClick"
-      ></b-input>
-    </b-field>
-    <div class="columns">
-      <Column name="Social Media" :links="socialMediaLinks" />
-      <Column name="Games" :links="gameLinks" />
-      <Column name="Programming" :links="programmingLinks" />
-      <Column name="Misc." :links="miscLinks" />
+  <div>
+    <b-button
+      @click="settingsToggled = !settingsToggled"
+      class="settings-button"
+      type="is-primary"
+      size="is-large"
+      icon-left="cog"
+    />
+    <!-- Area where settings options are located -->
+    <div v-if="settingsToggled" class="settings-area">
+      <p class="title is-size-4 has-text-light has-text-centered">Settings</p>
+      <div class="field">
+        <label for>Name</label>
+        <b-input v-model="name"></b-input>
+      </div>
+      <div class="field">
+        <b-switch v-model="twelveHour" passive-type="is-dark" type="is-primary">12-hour Clock</b-switch>
+      </div>
+      <div class="field">
+        <b-switch
+          v-model="lightMode"
+          passive-type="is-dark"
+          type="is-warning"
+          true-value="Light Mode (WIP)"
+          false-value="Dark Mode (WIP)"
+        >{{ lightMode }}</b-switch>
+      </div>
+      <b-button
+        @click="reloadPage"
+        class="is-primary settings-save-button"
+        size="is-medium"
+        icon-left="content-save-settings"
+      >Save</b-button>
     </div>
-    <!-- <b-button
+
+    <div class="main-container container">
+      <p v-if="name === ''" class="is-size-1 has-text-white">Let's Get Started</p>
+      <p v-if="name" class="is-size-1 has-text-white">Welcome, {{name}}</p>
+      <p class="title has-text-white is-size-4">{{ time }}</p>
+
+      <b-field v-on:keyup.enter.native="searchIconClick">
+        <b-input
+          placeholder="Duckduckgo Search..."
+          type="search"
+          icon-right="magnify"
+          icon-right-clickable
+          size="is-large"
+          v-model="searchTerm"
+          @icon-right-click="searchIconClick"
+        ></b-input>
+      </b-field>
+
+      <div class="columns">
+        <Column name="Social Media" :links="socialMediaLinks" />
+        <Column name="Games" :links="gameLinks" />
+        <Column name="Programming" :links="programmingLinks" />
+        <Column name="Misc." :links="miscLinks" />
+      </div>
+      <!-- <b-button
       rounded
       class="is-primary add-button"
       size="is-medium"
       icon-left="plus"
       @click="addColumn"
-    >Add Column</b-button>-->
+      >Add Column</b-button>-->
+    </div>
   </div>
 </template>
 
@@ -36,8 +75,12 @@ export default {
   name: "StartPage",
   data: function() {
     return {
+      lightMode: false,
+      twelveHour: false,
       searchTerm: "",
       time: "",
+      name: "",
+      settingsToggled: false,
       socialMediaLinks: [
         {
           id: 1,
@@ -133,10 +176,15 @@ export default {
     },
     searchIconClick: function() {
       if (this.searchTerm !== "") {
-        window.open("https://www.duckduckgo.com?q=" + this.searchTerm);
+        window.location.assign(
+          "https://www.duckduckgo.com?q=" + this.searchTerm
+        );
       }
     },
-    // time functions from
+    reloadPage: function() {
+      location.reload();
+    },
+    // 24-hour time functions from
     // https://www.w3schools.com/js/tryit.asp?filename=tryjs_timing_clock
     startTime: function() {
       var today = new Date();
@@ -153,16 +201,65 @@ export default {
         i = "0" + i;
       } // add zero in front of numbers < 10
       return i;
+    },
+    // 12-hour time formatter here:
+    // https://stackoverflow.com/questions/8888491/how-do-you-display-javascript-datetime-in-12-hour-am-pm-format
+    formatAMPM: function() {
+      var today = new Date();
+      var hours = today.getHours();
+      var minutes = today.getMinutes();
+      var seconds = today.getSeconds();
+      var ampm = hours >= 12 ? "pm" : "am";
+      hours = hours % 12;
+      hours = hours ? hours : 12; // the hour '0' should be '12'
+      minutes = this.checkTime(minutes);
+      seconds = this.checkTime(seconds);
+      this.time = hours + ":" + minutes + ":" + seconds + " " + ampm;
+      setTimeout(this.formatAMPM, 500);
     }
   },
+  // before the component mounts
   beforeMount() {
-    this.startTime();
+    // if (!this.twelveHour) {
+    //   this.formatAMPM();
+    // } else {
+    //   this.startTime();
+    // }
+  },
+  // when the component mounts
+  mounted() {
+    if (localStorage.name) {
+      this.name = localStorage.name;
+    }
+    if (localStorage.lightMode) {
+      this.lightMode = localStorage.lightMode;
+    }
+    if (localStorage.twelveHour) {
+      this.twelveHour = localStorage.twelveHour;
+    }
+
+    if (this.twelveHour === "true") {
+      this.formatAMPM();
+    } else {
+      this.startTime();
+    }
+  },
+  watch: {
+    name(newName) {
+      localStorage.name = newName;
+    },
+    lightMode(newLightMode) {
+      localStorage.lightMode = newLightMode;
+    },
+    twelveHour(newTwelveHour) {
+      localStorage.twelveHour = newTwelveHour;
+    }
   }
 };
 </script>
 
 <style scoped>
-.start-page {
+.main-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -176,5 +273,38 @@ export default {
 .columns > * {
   border-radius: 5px;
   margin: 20px 10px;
+}
+
+.settings-button {
+  position: absolute;
+  right: 0;
+  margin: 25px;
+}
+
+.settings-area {
+  position: absolute;
+  z-index: 5;
+  right: 0;
+  top: 110px;
+  margin: 0 25px 0 0;
+  padding: 15px;
+  background-color: #44475a;
+  box-shadow: 2px 2px 5px 2px rgba(0, 0, 0, 0.25);
+  /* border: 2px solid #44475a; */
+  border-radius: 5px;
+  height: 400px;
+  width: 250px;
+}
+
+.settings-label {
+  color: white;
+}
+
+.settings-save-button {
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  width: 92%;
+  position: absolute;
 }
 </style>
