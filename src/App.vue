@@ -55,6 +55,10 @@ $link: $link;
   color: white;
 }
 
+html {
+  background-color: $dark-grey;
+}
+
 body {
   background-color: $dark-grey;
 }

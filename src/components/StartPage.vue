@@ -1,5 +1,6 @@
 <template>
   <div>
+    <div class="modal-background" v-if="addColumnToggled"></div>
     <b-button
       @click="settingsToggled = !settingsToggled"
       class="settings-button"
@@ -7,6 +8,7 @@
       size="is-large"
       icon-left="cog"
     />
+    <p>{{columnName}}</p>
     <!-- Area where settings options are located -->
     <div v-if="settingsToggled" class="settings-area">
       <p class="title is-size-4 has-text-light has-text-centered">Settings</p>
@@ -34,6 +36,26 @@
       >Save</b-button>
     </div>
 
+    <!-- Area where the add column modal is located -->
+    <div v-if="addColumnToggled" class="add-column-menu">
+      <b-button
+        class="is-danger close-column-button"
+        size="is-medium"
+        icon-left="close"
+        @click="addColumnToggled = !addColumnToggled"
+      ></b-button>
+      <p class="title is-size-4 has-text-light has-text-centered">Add New Column</p>
+      <div class="field">
+        <label for="columnName" class="is-size-5">Column Name</label>
+        <b-input v-model="columnName"></b-input>
+      </div>
+      <b-button
+        class="is-primary column-add-button"
+        size="is-medium"
+        icon-left="plus-circle"
+      >Add Column</b-button>
+    </div>
+
     <div class="main-container container">
       <p v-if="name === ''" class="is-size-1 has-text-white">Let's Get Started</p>
       <p v-if="name" class="is-size-1 has-text-white">Welcome, {{name}}</p>
@@ -58,13 +80,12 @@
         <Column name="Programming" :links="programmingLinks" />
         <Column name="Misc." :links="miscLinks" />
       </div>
-      <!-- <b-button
-      rounded
-      class="is-primary add-button"
-      size="is-medium"
-      icon-left="plus"
-      @click="addColumn"
-      >Add Column</b-button>-->
+      <b-button
+        @click="addColumnToggled = !addColumnToggled"
+        class="is-primary add-button"
+        size="is-medium"
+        icon-left="plus-circle"
+      >Add Column</b-button>
     </div>
   </div>
 </template>
@@ -81,7 +102,9 @@ export default {
       searchTerm: "",
       time: "",
       name: "",
+      columnName: "",
       settingsToggled: false,
+      addColumnToggled: false,
       socialMediaLinks: [
         {
           id: 1,
@@ -173,7 +196,7 @@ export default {
   },
   methods: {
     addColumn: function() {
-      alert("Add column");
+      // alert("Add column");
     },
     searchIconClick: function() {
       if (this.searchTerm !== "") {
@@ -308,5 +331,42 @@ export default {
   right: 10px;
   width: 92%;
   position: absolute;
+}
+
+.column-add-button {
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  width: 97%;
+  position: absolute;
+}
+
+.add-column-menu {
+  position: absolute;
+  z-index: 5;
+  /* top: 430px;
+  left: 245px;
+  width: 500px;
+  height: 300px; */
+  padding: 15px;
+  border-radius: 5px;
+  background-color: #44475a;
+  box-shadow: 2px 2px 10px 5px rgba(0, 0, 0, 0.45);
+  margin-left: 50px;
+  margin-right: 50px;
+  left: 550px;
+  right: 550px;
+  top: 350px;
+  bottom: 350px;
+}
+
+.close-column-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.modal-background {
+  z-index: 5;
 }
 </style>
