@@ -47,6 +47,7 @@
           icon-right-clickable
           size="is-large"
           v-model="searchTerm"
+          id="search-box"
           @icon-right-click="searchIconClick"
         ></b-input>
       </b-field>
@@ -228,6 +229,7 @@ export default {
   },
   // when the component mounts
   mounted() {
+    document.getElementById("search-box").focus();
     if (localStorage.name) {
       this.name = localStorage.name;
     }
