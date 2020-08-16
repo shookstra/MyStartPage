@@ -8,7 +8,6 @@
       size="is-large"
       icon-left="cog"
     />
-    <p>{{columnName}}</p>
     <!-- Area where settings options are located -->
     <div v-if="settingsToggled" class="settings-area">
       <p class="title is-size-4 has-text-light has-text-centered">Settings</p>
@@ -50,6 +49,7 @@
         <b-input v-model="columnName"></b-input>
       </div>
       <b-button
+        @click="addColumn"
         class="is-primary column-add-button"
         size="is-medium"
         icon-left="plus-circle"
@@ -60,6 +60,7 @@
       <p v-if="name === ''" class="is-size-1 has-text-white">Let's Get Started</p>
       <p v-if="name" class="is-size-1 has-text-white">Welcome, {{name}}</p>
       <p class="title has-text-white is-size-4">{{ time }}</p>
+      <p class="title has-text-white is-size-5">{{columnName}}</p>
 
       <b-field v-on:keyup.enter.native="searchIconClick">
         <b-input
@@ -81,11 +82,15 @@
         <Column name="Misc." :links="miscLinks" />
       </div>
       <b-button
-        @click="addColumnToggled = !addColumnToggled"
+        @click="toggleAddColumnModal"
         class="is-primary add-button"
         size="is-medium"
         icon-left="plus-circle"
       >Add Column</b-button>
+    </div>
+    <div class="notification is-primary">
+      <button class="delete"></button>
+      My-Start-Page uses the browser's local storage to store your columns and bookmarks. Deleting this or clearing your browser cache could delete your data.
     </div>
   </div>
 </template>
@@ -196,7 +201,12 @@ export default {
   },
   methods: {
     addColumn: function() {
-      // alert("Add column");
+      const jsonified = {
+        columnName: this.columnName,
+        links: ""
+      };
+      localStorage.setItem("columnName", JSON.stringify(jsonified));
+      alert("Add column");
     },
     searchIconClick: function() {
       if (this.searchTerm !== "") {
@@ -204,6 +214,13 @@ export default {
           "https://www.duckduckgo.com?q=" + this.searchTerm
         );
       }
+    },
+    // method for toggling the add column modal
+    // and hiding the settings menu
+    toggleAddColumnModal: function() {
+      window.scrollTo(0, 0);
+      this.addColumnToggled = !this.addColumnToggled;
+      this.settingsToggled = false;
     },
     reloadPage: function() {
       location.reload();
@@ -288,7 +305,8 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  height: 100vh;
+  margin-top: auto;
+  min-height: 90vh;
 }
 
 .search-element {
@@ -301,6 +319,7 @@ export default {
 }
 
 .settings-button {
+  z-index: 1;
   position: absolute;
   right: 0;
   margin: 25px;
@@ -344,20 +363,16 @@ export default {
 .add-column-menu {
   position: absolute;
   z-index: 5;
-  /* top: 430px;
-  left: 245px;
-  width: 500px;
-  height: 300px; */
   padding: 15px;
   border-radius: 5px;
   background-color: #44475a;
   box-shadow: 2px 2px 10px 5px rgba(0, 0, 0, 0.45);
   margin-left: 50px;
   margin-right: 50px;
-  left: 550px;
-  right: 550px;
-  top: 350px;
-  bottom: 350px;
+  height: 200px;
+  left: 20%;
+  right: 20%;
+  top: 40%;
 }
 
 .close-column-button {
@@ -368,5 +383,31 @@ export default {
 
 .modal-background {
   z-index: 5;
+}
+
+.notification {
+  margin-top: 15px;
+}
+
+@media only screen and (max-width: 900px) {
+  .add-column-menu {
+    border: 1px solid red;
+    left: 5%;
+    right: 5%;
+  }
+}
+
+@media only screen and (max-width: 630px) {
+  .column-add-button {
+    width: 95%;
+  }
+}
+
+@media only screen and (max-width: 375px) {
+  .add-column-menu {
+    left: 0%;
+    right: 0%;
+    margin: 0 10px;
+  }
 }
 </style>

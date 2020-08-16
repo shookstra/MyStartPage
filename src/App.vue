@@ -53,6 +53,10 @@ $link: $link;
 
 #app {
   color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-content: center;
 }
 
 html {
@@ -61,5 +65,6 @@ html {
 
 body {
   background-color: $dark-grey;
+  min-height: 100vh;
 }
 </style>
