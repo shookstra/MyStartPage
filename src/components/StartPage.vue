@@ -1,50 +1,76 @@
 <template>
   <div>
     <div class="modal-background" v-if="newBookmarkForm"></div>
-    <b-button
-      @click="settingsToggled = !settingsToggled"
-      class="settings-button"
-      type="is-primary"
-      size="is-large"
-      icon-left="cog"
-    />
-    <b-button
-      @click="toggleAddBookmarkModal"
-      class="new-column-button"
-      type="is-primary"
-      size="is-large"
-      icon-left="plus"
-    />
+
+    <b-button @click="categorizeBookmarks">Categorize Bookmarks</b-button>
+
+    <!-- Action buttons section -->
+    <transition name="fade">
+      <!-- container for holding buttons and elements relating to the action buttons -->
+      <div class="action-buttons-container">
+        <b-button
+          @click="actionButtonsToggled = !actionButtonsToggled"
+          class="toggle-action-buttons"
+          type="is-primary"
+          size="is-large"
+          icon-left="dots-horizontal"
+        />
+        <!-- action buttons -->
+        <transition name="translate-y">
+          <div v-if="actionButtonsToggled" class="action-buttons">
+            <b-button
+              @click="toggleAddBookmarkModal"
+              class="new-column-button"
+              type="is-primary"
+              size="is-large"
+              icon-left="plus"
+            />
+            <b-button
+              @click="settingsToggled = !settingsToggled"
+              class="settings-button"
+              type="is-primary"
+              size="is-large"
+              icon-left="cog"
+            />
+          </div>
+        </transition>
+      </div>
+    </transition>
     <!-- Area where settings options are located -->
-    <div v-if="settingsToggled" class="settings-area">
-      <p class="title is-size-4 has-text-light has-text-centered">Settings</p>
-      <div class="field">
-        <label for>Name</label>
-        <b-input v-model="name"></b-input>
-      </div>
-      <div class="field">
-        <b-switch v-model="twelveHour" passive-type="is-dark" type="is-primary"
-          >12-hour Clock</b-switch
+    <transition name="fade">
+      <div v-if="settingsToggled" class="settings-area">
+        <p class="title is-size-4 has-text-light has-text-centered">Settings</p>
+        <div class="field">
+          <label for>Name</label>
+          <b-input v-model="name"></b-input>
+        </div>
+        <div class="field">
+          <b-switch
+            v-model="twelveHour"
+            passive-type="is-dark"
+            type="is-primary"
+            >12-hour Clock</b-switch
+          >
+        </div>
+        <div class="field">
+          <b-switch
+            v-model="lightMode"
+            passive-type="is-dark"
+            type="is-warning"
+            true-value="Light Mode (WIP)"
+            false-value="Dark Mode (WIP)"
+            >{{ lightMode }}</b-switch
+          >
+        </div>
+        <b-button
+          @click="reloadPage"
+          class="is-primary settings-save-button"
+          size="is-medium"
+          icon-left="content-save-settings"
+          >Save</b-button
         >
       </div>
-      <div class="field">
-        <b-switch
-          v-model="lightMode"
-          passive-type="is-dark"
-          type="is-warning"
-          true-value="Light Mode (WIP)"
-          false-value="Dark Mode (WIP)"
-          >{{ lightMode }}</b-switch
-        >
-      </div>
-      <b-button
-        @click="reloadPage"
-        class="is-primary settings-save-button"
-        size="is-medium"
-        icon-left="content-save-settings"
-        >Save</b-button
-      >
-    </div>
+    </transition>
 
     <!-- Area where the add column modal is located -->
     <div v-if="addColumnToggled" class="add-column-menu">
@@ -77,7 +103,7 @@
       <p v-if="name" class="is-size-1 has-text-white">Welcome, {{ name }}</p>
       <p class="title has-text-white is-size-4">{{ time }}</p>
 
-      <transition name="fade">
+      <transition name="translate">
         <div
           v-if="newBookmarkForm"
           class="modal-background new-bookmark-section"
@@ -143,8 +169,6 @@
         </div>
       </transition>
 
-      <div class="divider"></div>
-
       <ul v-if="!Array.isArray(bookmarks)" class="bookmark-list bookmark-item">
         <li>Single Item</li>
         <li>URL: {{ bookmarks.url }}</li>
@@ -174,7 +198,7 @@
           @icon-right-click="searchIconClick"
         ></b-input>
       </b-field>
-
+      <!-- Bookmark category columns -->
       <div class="columns">
         <Column name="Social Media" :links="socialMediaLinks" />
         <Column name="Games" :links="gameLinks" />
@@ -194,7 +218,7 @@
         your data.
       </div>
 
-      <transition name="fade" tag="div">
+      <transition name="translate" tag="div">
         <div
           class="bottom-messages notification is-danger"
           id="error-messages"
@@ -211,7 +235,7 @@
         </div>
       </transition>
 
-      <transition name="fade">
+      <transition name="translate">
         <div
           class="bottom-messages notification is-success"
           id="success-message"
@@ -249,6 +273,7 @@ export default {
       settingsToggled: false,
       addColumnToggled: false,
       newBookmarkForm: false,
+      actionButtonsToggled: false,
       socialMediaLinks: [
         {
           id: 1,
@@ -455,6 +480,27 @@ export default {
       this.url = "";
       this.columnName = "";
     },
+    categorizeBookmarks: function() {
+      let columnNames = [];
+      for (let index = 0; index < this.bookmarks.length; index++) {
+        columnNames.push(this.bookmarks[index].columnName);
+      }
+      // console.log(columnNames);
+
+      let organizedColumns = [];
+      columnNames.forEach((column, index) => {
+        if (organizedColumns.includes(column.columnName)) {
+          console.log("includes");
+        }
+        console.log(index);
+        console.log(column);
+      });
+
+      // let testSearchEngines = this.bookmarks.filter(
+      //   (bookmark) => bookmark.columnName == "Search Engines"
+      // );
+      // console.dir(testSearchEngines);
+    },
   },
   // when the component mounts
   mounted() {
@@ -513,23 +559,24 @@ export default {
 
 .settings-button {
   z-index: 1;
-  position: absolute;
+  /* position: absolute;
   right: 0;
-  margin: 90px 25px 0 0;
+  margin: 90px 25px 0 0; */
 }
 
 .new-column-button {
   z-index: 1;
-  position: absolute;
+  /* position: absolute;
   right: 0;
-  margin: 25px;
+  margin: 25px; */
 }
 
 .settings-area {
   position: absolute;
   z-index: 5;
   right: 0;
-  top: 170px;
+  top: 20px;
+  right: 75px;
   margin: 0 25px 0 0;
   padding: 15px;
   background-color: #44475a;
@@ -628,13 +675,58 @@ export default {
   margin-bottom: 20px;
 }
 
+.action-buttons-container {
+  position: absolute;
+  right: 100px;
+}
+
+.action-buttons {
+  z-index: 4;
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  background-color: #44475a;
+  height: 150px;
+  padding: 10px;
+  border-radius: 5px;
+  /* right: 25px; */
+  right: -80px;
+  top: 0;
+}
+
+.action-buttons > * {
+  margin: 5px 0;
+}
+
+.toggle-action-buttons {
+  z-index: 2;
+}
+
+/* transitions */
+.translate-enter-active,
+.translate-leave-active {
+  transition: transform 350ms;
+}
+
+.translate-enter, .translate-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  transform: translateY(1000px);
+}
+
+.translate-y-enter-active,
+.translate-y-leave-active {
+  transition: transform 250ms;
+}
+
+.translate-y-enter, .translate-y-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  transform: translateX(100px);
+}
+
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 350ms, transform 350ms;
+  transition: opacity 250ms;
 }
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
   opacity: 0;
-  transform: translateY(1000px);
 }
 
 @media only screen and (max-width: 900px) {
