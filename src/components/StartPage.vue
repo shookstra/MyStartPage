@@ -103,6 +103,14 @@
       <p v-if="name" class="is-size-1 has-text-white">Welcome, {{ name }}</p>
       <p class="title has-text-white is-size-4">{{ time }}</p>
 
+      <!-- <ul v-for="bookmark in bookmarks" :key="bookmark.name">
+        <Bookmark
+          :bookmark="bookmark.bookmark"
+          :url="bookmark.url"
+          :columnName="bookmark.columnName"
+        />
+      </ul> -->
+
       <transition name="translate">
         <div
           v-if="newBookmarkForm"
@@ -198,6 +206,18 @@
           @icon-right-click="searchIconClick"
         ></b-input>
       </b-field>
+
+      <div v-for="column in bookmarks" :key="column.columnName">
+        <Column :name="column.columnName" :bookmarks="column.bookmarks" />
+        <div>
+          <h1 class="is-size-4">{{ column.columnName }}</h1>
+          <div v-for="bookmark in column.bookmarks" :key="bookmark.bookmark">
+            <p>{{ bookmark.bookmark }}</p>
+          </div>
+          <p></p>
+        </div>
+      </div>
+
       <!-- Bookmark category columns -->
       <div class="columns">
         <Column name="Social Media" :links="socialMediaLinks" />
@@ -481,25 +501,44 @@ export default {
       this.columnName = "";
     },
     categorizeBookmarks: function() {
-      let columnNames = [];
-      for (let index = 0; index < this.bookmarks.length; index++) {
-        columnNames.push(this.bookmarks[index].columnName);
-      }
-      // console.log(columnNames);
-
+      // reorganized array of bookmarks grouped by column name
       let organizedColumns = [];
-      columnNames.forEach((column, index) => {
-        if (organizedColumns.includes(column.columnName)) {
-          console.log("includes");
+      // array of column names for checking if the bookmark has been added already
+      let columnNames = [];
+      // loop through each bookmark in state
+      this.bookmarks.forEach((bookmark) => {
+        // if there are no bookmarks in the array yet add an initial bookmark
+        if (organizedColumns.length === 0) {
+          organizedColumns.push({
+            columnName: bookmark.columnName,
+            bookmarks: [{ bookmark: bookmark.bookmark, url: bookmark.url }],
+          });
+          // append to the column names array
+          columnNames.push(bookmark.columnName);
+        } else {
+          // loop through each element in the organized columns object array
+          organizedColumns.forEach((column, index) => {
+            // if the current bookmark's column name is in the array of column names append to the existing array
+            if (columnNames.includes(bookmark.columnName)) {
+              organizedColumns[index].bookmarks.push({
+                bookmark: bookmark.bookmark,
+                url: bookmark.url,
+              });
+            } else {
+              // else create a new object in the array of columns
+              organizedColumns.push({
+                columnName: bookmark.columnName,
+                bookmarks: [{ bookmark: bookmark.bookmark, url: bookmark.url }],
+              });
+              // append to the column names array
+              columnNames.push(bookmark.columnName);
+            }
+          });
         }
-        console.log(index);
-        console.log(column);
       });
 
-      // let testSearchEngines = this.bookmarks.filter(
-      //   (bookmark) => bookmark.columnName == "Search Engines"
-      // );
-      // console.dir(testSearchEngines);
+      console.dir(organizedColumns);
+      localStorage.setItem("bookmarks", JSON.stringify(organizedColumns));
     },
   },
   // when the component mounts
@@ -575,13 +614,12 @@ export default {
   position: absolute;
   z-index: 5;
   right: 0;
-  top: 20px;
+  top: 55px;
   right: 75px;
   margin: 0 25px 0 0;
   padding: 15px;
   background-color: #44475a;
   box-shadow: 2px 2px 5px 2px rgba(0, 0, 0, 0.25);
-  /* border: 2px solid #44475a; */
   border-radius: 5px;
   height: 400px;
   width: 250px;

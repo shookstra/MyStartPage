@@ -3,8 +3,10 @@
     <div>
       <p class="heading is-size-3">{{ name }}</p>
       <ul id="links">
-        <li v-for="link in links" :key="link.id">
-          <a :href="link.link" target="_blank" class="link is-size-5">{{ link.name }}</a>
+        <li v-for="bookmark in bookmarks" :key="bookmark.id">
+          <a :href="bookmark.url" target="_blank" class="link is-size-5">{{
+            bookmark.bookmark
+          }}</a>
         </li>
       </ul>
     </div>
@@ -23,13 +25,13 @@ export default {
   name: "Column",
   props: {
     name: String,
-    links: Array
+    bookmarks: Array,
   },
   methods: {
     populateLinks: function() {
       alert("add link");
-    }
-  }
+    },
+  },
 };
 </script>
 
