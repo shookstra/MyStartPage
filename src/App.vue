@@ -10,8 +10,8 @@ import StartPage from "./components/StartPage.vue";
 export default {
   name: "App",
   components: {
-    StartPage
-  }
+    StartPage,
+  },
 };
 </script>
 
@@ -33,16 +33,17 @@ $light-grey-invert: findColorInvert($light-grey);
 $colors: (
   "primary": (
     $primary,
-    $primary-invert
+    $primary-invert,
   ),
   // "link": (
   //   $link,
   //   $link-invert
   // ),
-  "light-grey": (
-    $light-grey,
-    $light-grey-invert
-  )
+  "light-grey":
+    (
+      $light-grey,
+      $light-grey-invert,
+    ),
 );
 
 $link: $link;
@@ -60,7 +61,7 @@ $link: $link;
 }
 
 html {
-  background-color: $dark-grey;
+  background-color: #282a36;
 }
 
 body {

@@ -10,6 +10,7 @@
   "dependencies": {
     "buefy": "^0.8.20",
     "core-js": "^3.6.5",
+    "dexie": "^3.0.3",
     "sass-loader": "^8.0.2",
     "uuid": "^8.3.0",
     "vue": "^2.6.11"

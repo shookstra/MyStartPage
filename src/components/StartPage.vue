@@ -2,8 +2,6 @@
   <div>
     <div class="modal-background" v-if="newBookmarkForm"></div>
 
-    <b-button @click="categorizeBookmarks">Categorize Bookmarks</b-button>
-
     <!-- Action buttons section -->
     <transition name="fade">
       <!-- container for holding buttons and elements relating to the action buttons -->
@@ -81,18 +79,18 @@
         @click="addColumnToggled = !addColumnToggled"
       ></b-button>
       <p class="title is-size-4 has-text-light has-text-centered">
-        Add New Column
+        Add New Category
       </p>
       <div class="field">
-        <label for="columnName" class="is-size-5">Column Name</label>
-        <b-input v-model="columnName"></b-input>
+        <label for="category" class="is-size-5">Category Name</label>
+        <b-input v-model="category"></b-input>
       </div>
       <b-button
         @click="addColumn"
         class="is-primary column-add-button"
         size="is-medium"
         icon-left="plus-circle"
-        >Add Column</b-button
+        >Add Category</b-button
       >
     </div>
 
@@ -102,14 +100,6 @@
       </p>
       <p v-if="name" class="is-size-1 has-text-white">Welcome, {{ name }}</p>
       <p class="title has-text-white is-size-4">{{ time }}</p>
-
-      <!-- <ul v-for="bookmark in bookmarks" :key="bookmark.name">
-        <Bookmark
-          :bookmark="bookmark.bookmark"
-          :url="bookmark.url"
-          :columnName="bookmark.columnName"
-        />
-      </ul> -->
 
       <transition name="translate">
         <div
@@ -145,7 +135,7 @@
               <input
                 class="input"
                 type="text"
-                placeholder="Enter your bookmark URL"
+                placeholder="Enter your bookmark URL (including https and www.)"
                 v-model="url"
               />
               <span class="icon is-small is-left">
@@ -159,11 +149,25 @@
               <input
                 class="input"
                 type="text"
-                placeholder="Enter your column name"
-                v-model="columnName"
+                placeholder="Enter your category name"
+                v-model="category"
               />
               <span class="icon is-small is-left">
                 <i class="fas fa-columns"></i>
+              </span>
+            </p>
+          </div>
+          <!-- Description section -->
+          <div class="field">
+            <p class="control has-icons-left has-icons-right">
+              <input
+                class="input"
+                type="text"
+                placeholder="Enter a description (optional) --- WIP ---"
+                v-model="description"
+              />
+              <span class="icon is-small is-left">
+                <i class="fas fa-info"></i>
               </span>
             </p>
           </div>
@@ -177,60 +181,35 @@
         </div>
       </transition>
 
-      <ul v-if="!Array.isArray(bookmarks)" class="bookmark-list bookmark-item">
-        <li>Single Item</li>
-        <li>URL: {{ bookmarks.url }}</li>
-        <li>Bookmark: {{ bookmarks.bookmark }}</li>
-        <li>Column Name: {{ bookmarks.columnName }}</li>
-      </ul>
-      <ul
-        v-else
-        v-for="bookmark in bookmarks"
-        :key="bookmark.bookmark"
-        class="bookmark-list bookmark-item"
-      >
-        <li>URL: {{ bookmark.url }}</li>
-        <li>Bookmark: {{ bookmark.bookmark }}</li>
-        <li>Column Name: {{ bookmark.columnName }}</li>
-      </ul>
-
-      <b-field v-on:keyup.enter.native="searchIconClick">
-        <b-input
-          placeholder="Duckduckgo Search..."
-          type="search"
-          icon-right="magnify"
-          icon-right-clickable
-          size="is-large"
-          v-model="searchTerm"
-          id="search-box"
-          @icon-right-click="searchIconClick"
-        ></b-input>
-      </b-field>
-
-      <div v-for="column in bookmarks" :key="column.columnName">
-        <Column :name="column.columnName" :bookmarks="column.bookmarks" />
-        <div>
-          <h1 class="is-size-4">{{ column.columnName }}</h1>
-          <div v-for="bookmark in column.bookmarks" :key="bookmark.bookmark">
-            <p>{{ bookmark.bookmark }}</p>
-          </div>
-          <p></p>
-        </div>
+      <div class="search-bar-container mb-1">
+        <b-field v-on:keyup.enter.native="searchIconClick">
+          <b-input
+            placeholder="Duckduckgo Search..."
+            type="search"
+            icon-right="magnify"
+            icon-right-clickable
+            size="is-large"
+            v-model="searchTerm"
+            id="search-box"
+            @icon-right-click="searchIconClick"
+          ></b-input>
+        </b-field>
       </div>
 
       <!-- Bookmark category columns -->
-      <div class="columns">
-        <Column name="Social Media" :links="socialMediaLinks" />
-        <Column name="Games" :links="gameLinks" />
-        <Column name="Programming" :links="programmingLinks" />
-        <Column name="Misc." :links="miscLinks" />
+      <div class="categories">
+        <div
+          v-for="bookmarks in organizedBookmarks"
+          :key="bookmarks.id"
+          class="category"
+        >
+          <Category
+            v-if="bookmarks[0] !== undefined"
+            :bookmarks="bookmarks"
+            :name="bookmarks[0].category"
+          />
+        </div>
       </div>
-      <b-button
-        class="is-primary add-button"
-        size="is-medium"
-        icon-left="plus-circle"
-        >Add Column</b-button
-      >
       <div class="notification is-primary">
         <button class="delete"></button>
         My-Start-Page uses the browser's local storage to store your columns and
@@ -273,21 +252,29 @@
 </template>
 
 <script>
-import Column from "./Column.vue";
+import Category from "./Category.vue";
+// import Categories from "./Categories.vue";
+
+import Dexie from "dexie";
+var db = new Dexie("MyStartPage");
+db.version(1).stores({
+  bookmarks: "++id,bookmark,url,column,description",
+});
 
 export default {
   name: "StartPage",
-  data: function() {
+  data: function () {
     return {
       lightMode: false,
       twelveHour: false,
       searchTerm: "",
       time: "",
       name: "",
-      columnName: "",
+      category: "",
       bookmark: "",
       url: "",
-      bookmarks: [],
+      description: "",
+      organizedBookmarks: [],
       errorMessages: [],
       successfullyAddedBookmark: false,
       settingsToggled: false,
@@ -381,10 +368,10 @@ export default {
     };
   },
   components: {
-    Column,
+    Category,
   },
   methods: {
-    addColumn: function() {
+    addColumn: function () {
       const jsonified = {
         columnName: this.columnName,
         links: "",
@@ -392,7 +379,7 @@ export default {
       localStorage.setItem("columnName", JSON.stringify(jsonified));
       alert("Add column");
     },
-    searchIconClick: function() {
+    searchIconClick: function () {
       if (this.searchTerm !== "") {
         window.location.assign(
           "https://www.duckduckgo.com?q=" + this.searchTerm
@@ -401,17 +388,17 @@ export default {
     },
     // method for toggling the add bookmark modal
     // and hiding the settings menu
-    toggleAddBookmarkModal: function() {
+    toggleAddBookmarkModal: function () {
       window.scrollTo(0, 0);
       this.newBookmarkForm = !this.newBookmarkForm;
       this.settingsToggled = false;
     },
-    reloadPage: function() {
+    reloadPage: function () {
       location.reload();
     },
     // 24-hour time functions from
     // https://www.w3schools.com/js/tryit.asp?filename=tryjs_timing_clock
-    startTime: function() {
+    startTime: function () {
       var today = new Date();
       var h = today.getHours();
       var m = today.getMinutes();
@@ -421,7 +408,7 @@ export default {
       this.time = h + ":" + m + ":" + s;
       setTimeout(this.startTime, 500);
     },
-    checkTime: function(i) {
+    checkTime: function (i) {
       if (i < 10) {
         i = "0" + i;
       } // add zero in front of numbers < 10
@@ -429,7 +416,7 @@ export default {
     },
     // 12-hour time formatter here:
     // https://stackoverflow.com/questions/8888491/how-do-you-display-javascript-datetime-in-12-hour-am-pm-format
-    formatAMPM: function() {
+    formatAMPM: function () {
       var today = new Date();
       var hours = today.getHours();
       var minutes = today.getMinutes();
@@ -442,110 +429,80 @@ export default {
       this.time = hours + ":" + minutes + ":" + seconds + " " + ampm;
       setTimeout(this.formatAMPM, 500);
     },
-    createBookmark: function() {
+    createBookmark: async function () {
       this.validateBookmarkInputs();
       if (this.errorMessages.length === 0) {
         // create a new bookmark object based on user input
         const newBookmark = {
-          columnName: this.columnName,
+          category: this.category,
           bookmark: this.bookmark,
           url: this.url,
+          description: this.description,
         };
 
-        if (
-          localStorage.getItem("bookmarks") === "" ||
-          localStorage.getItem("bookmarks") === null
-        ) {
-          console.log("No bookmarks in local storage");
-          localStorage.setItem("bookmarks", JSON.stringify(newBookmark));
-        } else {
-          let currentBookmarks = [];
-          let unformattedCurrentBookmarks = JSON.parse(
-            localStorage.getItem("bookmarks")
-          );
+        let id = await db.bookmarks.add(newBookmark);
+        console.log("Got id " + id);
 
-          if (Array.isArray(unformattedCurrentBookmarks)) {
-            unformattedCurrentBookmarks.forEach((bookmark) => {
-              currentBookmarks.push(bookmark);
-            });
-          } else {
-            currentBookmarks.push(unformattedCurrentBookmarks);
-          }
+        // Ok, so let's query it
+        var bookmarks = await db.bookmarks.where("done").above(0).toArray();
+        console.log("Completed tasks: " + JSON.stringify(bookmarks, 0, 2));
 
-          currentBookmarks.push(newBookmark);
-          this.bookmarks = currentBookmarks;
-          localStorage.setItem("bookmarks", JSON.stringify(this.bookmarks));
-          // clear the new bookmark user input fields
-          this.clearBookmarkInputs();
-          this.successfullyAddedBookmark = true;
-        }
+        // clear the new bookmark user input fields
+        this.clearBookmarkInputs();
+        this.successfullyAddedBookmark = true;
+        this.retrieveBookmarks();
       }
     },
     // function to validate bookmark user inputs
-    validateBookmarkInputs: function() {
+    validateBookmarkInputs: function () {
       let errorMessages = [];
-      if (this.columnName === "") {
+      if (this.column === "") {
         errorMessages.push("Please enter a column name");
       }
       if (this.url === "") {
         errorMessages.push("Please enter a URL");
       }
-      if (this.bookmark === "") {
+      if (this.name === "") {
         errorMessages.push("Please enter a name for you bookmark");
       }
       this.errorMessages = errorMessages;
     },
-    clearBookmarkInputs: function() {
+    clearBookmarkInputs: function () {
       this.bookmark = "";
       this.url = "";
       this.columnName = "";
     },
-    categorizeBookmarks: function() {
-      // reorganized array of bookmarks grouped by column name
-      let organizedColumns = [];
-      // array of column names for checking if the bookmark has been added already
-      let columnNames = [];
-      // loop through each bookmark in state
-      this.bookmarks.forEach((bookmark) => {
-        // if there are no bookmarks in the array yet add an initial bookmark
-        if (organizedColumns.length === 0) {
-          organizedColumns.push({
-            columnName: bookmark.columnName,
-            bookmarks: [{ bookmark: bookmark.bookmark, url: bookmark.url }],
-          });
-          // append to the column names array
-          columnNames.push(bookmark.columnName);
-        } else {
-          // loop through each element in the organized columns object array
-          organizedColumns.forEach((column, index) => {
-            // if the current bookmark's column name is in the array of column names append to the existing array
-            if (columnNames.includes(bookmark.columnName)) {
-              organizedColumns[index].bookmarks.push({
-                bookmark: bookmark.bookmark,
-                url: bookmark.url,
-              });
-            } else {
-              // else create a new object in the array of columns
-              organizedColumns.push({
-                columnName: bookmark.columnName,
-                bookmarks: [{ bookmark: bookmark.bookmark, url: bookmark.url }],
-              });
-              // append to the column names array
-              columnNames.push(bookmark.columnName);
-            }
-          });
+    retrieveBookmarks: async function () {
+      const bookmarks = await db.bookmarks.toArray();
+      this.organizedBookmarks = [];
+      // retrieve list of all categories
+      let categories = this.retrieveCategories(bookmarks);
+      let organizedBookmarks = [];
+      categories.forEach((category) => {
+        const filteredBookmarks = bookmarks.filter(
+          (bookmark) => bookmark.category == category
+        );
+        organizedBookmarks.push(filteredBookmarks);
+      });
+      this.organizedBookmarks = organizedBookmarks;
+    },
+    retrieveCategories: (bookmarks) => {
+      let categories = [];
+      // loop through passed in bookmarks array and find all categories
+      bookmarks.forEach((bookmark) => {
+        // if the category isn't in the array then add it
+        if (!categories.includes(bookmark.category)) {
+          categories.push(bookmark.category);
         }
       });
-
-      console.dir(organizedColumns);
-      localStorage.setItem("bookmarks", JSON.stringify(organizedColumns));
+      return categories;
     },
   },
   // when the component mounts
   mounted() {
     // const bookmark = localStorage.getItem("bookmarks");
     if (localStorage.getItem("bookmarks") !== null) {
-      this.bookmarks = JSON.parse(localStorage.getItem("bookmarks"));
+      this.organizedBookmarks = JSON.parse(localStorage.getItem("bookmarks"));
     }
     document.getElementById("search-box").focus();
     if (localStorage.name) {
@@ -563,6 +520,8 @@ export default {
     } else {
       this.startTime();
     }
+
+    this.retrieveBookmarks();
   },
   watch: {
     name(newName) {
@@ -583,7 +542,7 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  margin-top: auto;
+  /* margin-top: 125px; */
   min-height: 90vh;
 }
 
@@ -591,30 +550,24 @@ export default {
   display: flex;
 }
 
-.columns > * {
-  border-radius: 5px;
-  margin: 20px 10px;
+.categories {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .settings-button {
   z-index: 1;
-  /* position: absolute;
-  right: 0;
-  margin: 90px 25px 0 0; */
 }
 
 .new-column-button {
   z-index: 1;
-  /* position: absolute;
-  right: 0;
-  margin: 25px; */
 }
 
 .settings-area {
   position: absolute;
   z-index: 5;
   right: 0;
-  top: 55px;
+  top: 20px;
   right: 75px;
   margin: 0 25px 0 0;
   padding: 15px;
@@ -667,7 +620,8 @@ export default {
 }
 
 .modal-background {
-  z-index: 5;
+  z-index: 6;
+  position: fixed;
 }
 
 .notification {
@@ -693,15 +647,15 @@ export default {
 }
 
 .new-bookmark-section {
-  position: absolute;
-  z-index: 5;
-  left: 50px;
-  right: 50px;
-  top: 25%;
-  height: 275px;
+  position: fixed;
+  height: 325px;
   padding: 10px;
   background-color: #44475a;
+  margin: 0 auto;
+  left: 15px;
+  right: 15px;
   border-radius: 5px;
+  transform: translateY(50%);
 }
 
 .divider {
@@ -716,10 +670,11 @@ export default {
 .action-buttons-container {
   position: absolute;
   right: 100px;
+  top: 20px;
 }
 
 .action-buttons {
-  z-index: 4;
+  z-index: 5;
   position: absolute;
   display: flex;
   flex-direction: column;
@@ -727,7 +682,6 @@ export default {
   height: 150px;
   padding: 10px;
   border-radius: 5px;
-  /* right: 25px; */
   right: -80px;
   top: 0;
 }
@@ -738,6 +692,19 @@ export default {
 
 .toggle-action-buttons {
   z-index: 2;
+}
+
+.search-suggestions {
+  position: absolute;
+  width: 100%;
+  z-index: 1;
+  min-height: 200px;
+  background-color: #282a36;
+  border: 1px solid red;
+}
+
+.mb-1 {
+  margin-bottom: 10px;
 }
 
 /* transitions */
@@ -786,6 +753,13 @@ export default {
     left: 0%;
     right: 0%;
     margin: 0 10px;
+  }
+
+  .new-bookmark-section {
+    left: 5px;
+    right: 15px;
+    padding: 10px;
+    min-height: 300px;
   }
 }
 </style>

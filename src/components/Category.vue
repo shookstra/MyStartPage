@@ -1,12 +1,13 @@
 <template>
-  <div class="column">
+  <div class="category">
     <div>
       <p class="heading is-size-3">{{ name }}</p>
       <ul id="links">
-        <li v-for="bookmark in bookmarks" :key="bookmark.id">
+        <li v-for="bookmark in bookmarks" :key="bookmark.id" class="bookmark">
           <a :href="bookmark.url" target="_blank" class="link is-size-5">{{
             bookmark.bookmark
           }}</a>
+          <b-button type="is-danger" disabled icon-right="delete" />
         </li>
       </ul>
     </div>
@@ -22,13 +23,13 @@
 
 <script>
 export default {
-  name: "Column",
+  name: "Category",
   props: {
     name: String,
     bookmarks: Array,
   },
   methods: {
-    populateLinks: function() {
+    populateLinks: function () {
       alert("add link");
     },
   },
@@ -36,11 +37,19 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.column {
+.category {
   padding: 15px;
   position: relative;
   min-height: 325px;
   background-color: #44475a;
+  border-radius: 5px;
+  margin: 5px;
+}
+
+.bookmark {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0px;
 }
 
 .add-button {
